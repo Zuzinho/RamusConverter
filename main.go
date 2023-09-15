@@ -37,6 +37,7 @@ func main() {
 
 		if ok, err := checker.IsCorrectFormat(fileHeader); !ok {
 			throwOnErr(err, &w)
+			return
 		}
 
 		rd, err := converter.Convert(file)
@@ -61,7 +62,7 @@ func logOnErr(err error) {
 
 func throwOnErr(err error, w *http.ResponseWriter) {
 	if err != nil {
-		http.Error(*w, "Internal Server Error", 500)
+		http.Error(*w, err.Error(), 500)
 		log.Println(err)
 	}
 }
