@@ -1,0 +1,4 @@
+*.exe
+*_test.go
+*.html
+*.js
