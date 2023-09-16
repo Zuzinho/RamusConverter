@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Convert(rd io.Reader) (*strings.Reader, error) {
+func convert(rd io.Reader) ([][]*ramustypes.Box, error) {
 	buf, err := io.ReadAll(rd)
 	if err != nil {
 		return nil, err
@@ -65,11 +65,40 @@ func Convert(rd io.Reader) (*strings.Reader, error) {
 		mainBoxes = append(mainBoxes, boxes)
 	}
 
+	return mainBoxes, nil
+}
+
+func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
+	boxes, err := convert(rd)
+	if err != nil {
+		return nil, err
+	}
+
 	builder := strings.Builder{}
 
-	for _, boxArr := range mainBoxes {
+	for _, boxArr := range boxes {
 		for _, box := range boxArr {
-			builder.WriteString(box.String() + "\n")
+			builder.WriteString(box.StringAsList() + "\n")
+		}
+	}
+
+	return strings.NewReader(builder.String()), nil
+}
+
+func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
+	boxes, err := convert(rd)
+	if err != nil {
+		return nil, err
+	}
+
+	builder := strings.Builder{}
+
+	builder.WriteString("| **Наименование диаграммы/код** | **Вход** | **Выход** | **Механизм** | **Управление** |\n" +
+		"|--------------------------------|----------|-----------|--------------|----------------|\n")
+
+	for _, boxArr := range boxes {
+		for _, box := range boxArr {
+			builder.WriteString(box.StringAsTable() + "\n")
 		}
 	}
 
