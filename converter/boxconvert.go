@@ -14,7 +14,18 @@ func convertBox(src []byte) (*ramustypes.Box, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	regDig, err := regexp.Compile("[0-9]+")
+	if err != nil {
+		return nil, err
+	}
+
+	regDetRef, err := regexp.Compile("DETAIL REFERENCE.*;")
+	if err != nil {
+		return nil, err
+	}
+
+	regRef, err := regexp.Compile("A\\d+")
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +40,9 @@ func convertBox(src []byte) (*ramustypes.Box, error) {
 	bef, aft, _ := strings.Cut(string(regName.Find(src)), ramustypes.BoxPrefix)
 	name := bef + aft
 
-	box := ramustypes.NewBox(id, name)
+	reference := string(regRef.Find(regDetRef.Find(src)))
+
+	box := ramustypes.NewBox(id, name, reference)
 
 	return box, nil
 }
