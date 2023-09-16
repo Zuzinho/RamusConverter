@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func convert(rd io.Reader) ([][]*ramustypes.Box, error) {
+func convert(rd io.Reader) ([]*ramustypes.Box, error) {
 	buf, err := io.ReadAll(rd)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func convert(rd io.Reader) ([][]*ramustypes.Box, error) {
 		return nil, err
 	}
 
-	mainBoxes := make([][]*ramustypes.Box, 0)
+	mainBoxes := make([]*ramustypes.Box, 0)
 
 	splitDiags := regDiag.Split(string(buf), -1)
 	for _, diag := range splitDiags {
@@ -62,7 +62,7 @@ func convert(rd io.Reader) ([][]*ramustypes.Box, error) {
 			}
 		}
 
-		mainBoxes = append(mainBoxes, boxes)
+		mainBoxes = append(mainBoxes, boxes...)
 	}
 
 	return mainBoxes, nil
@@ -76,10 +76,8 @@ func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
 
 	builder := strings.Builder{}
 
-	for _, boxArr := range boxes {
-		for _, box := range boxArr {
-			builder.WriteString(box.StringAsList() + "\n")
-		}
+	for _, box := range boxes {
+		builder.WriteString(box.StringAsList() + "\n")
 	}
 
 	return strings.NewReader(builder.String()), nil
@@ -96,10 +94,8 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 	builder.WriteString("| **Наименование диаграммы/код** | **Вход** | **Выход** | **Механизм** | **Управление** |\n" +
 		"|--------------------------------|----------|-----------|--------------|----------------|\n")
 
-	for _, boxArr := range boxes {
-		for _, box := range boxArr {
-			builder.WriteString(box.StringAsTable() + "\n")
-		}
+	for _, box := range boxes {
+		builder.WriteString(box.StringAsTable() + "\n")
 	}
 
 	return strings.NewReader(builder.String()), nil
