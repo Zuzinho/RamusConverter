@@ -16,12 +16,13 @@ type MechanismArrow Arrow
 
 func NewArrow(label string) *Arrow {
 	label = strings.ReplaceAll(label, "<CR>", " ")
+	label = strings.ReplaceAll(label, "'", "")
 	return &Arrow{
 		Label: label,
 	}
 }
 
-func (arrow Arrow) String() string {
+func (arrow Arrow) StringAsList() string {
 	return fmt.Sprintf("**%s**", arrow.Label)
 }
 
