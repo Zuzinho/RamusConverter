@@ -98,5 +98,9 @@ func (box Box) String() string {
 		}
 	}
 
-	return fmt.Sprintf("Процесс %s:\n\n%s\n\n%s\n\n%s\n\n%s\n", box.Name, controlStr, mechString, inputStr, outputString)
+	return fmt.Sprintf("**Процесс %s**:\n\n"+
+		"+ %s\n\n"+
+		"+ %s\n\n"+
+		"+ %s\n\n"+
+		"+ %s\n", box.Name, controlStr, mechString, inputStr, outputString)
 }
