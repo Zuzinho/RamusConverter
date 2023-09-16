@@ -55,7 +55,7 @@ func convert(rd io.Reader) ([]*ramustypes.Box, error) {
 				for i := range boxes {
 					box := boxes[i]
 					if box.Id == info.BoxId {
-						boxes[i] = box.AddArrow(*arrow, info.Type)
+						box.AddArrow(*arrow, info.Type)
 						log.Println(info, boxes[i])
 					}
 				}
