@@ -56,17 +56,26 @@ func (box *Box) AddArrow(arrow Arrow, tp string) {
 	}
 }
 
-func (box *Box) AddBox(childBox *Box) {
-	box.Boxes = append(box.Boxes, childBox)
+func (box *Box) AddBox(childBox ...*Box) {
+	box.Boxes = append(box.Boxes, childBox...)
+}
+
+func (box *Box) ProcessType() string {
+	if box.Reference == "A0" {
+		return "Процесс"
+	}
+
+	return "Подпроцесс"
 }
 
 const BoxPrefix = "{LWI I 4 255 255 255}"
 
 func (box *Box) StringAsList() string {
+	tp := box.ProcessType()
 	controlStr := "Управляющим потоком (потоком Управления) является:"
-	mechString := "Процесс осуществляется (механизм):"
-	inputStr := "Входами процесса являются:"
-	outputString := "Выходом процесса является:"
+	mechString := fmt.Sprintf("%s осуществляется (механизм):", tp)
+	inputStr := fmt.Sprintf("Входами %sа являются:", tp)
+	outputString := fmt.Sprintf("Выходом %sа является:", tp)
 
 	for i, arr := range box.ControlArrows {
 		controlStr += " " + Arrow(*arr).StringAsList()
@@ -104,11 +113,11 @@ func (box *Box) StringAsList() string {
 		}
 	}
 
-	return fmt.Sprintf("**Процесс \"%s\"**:\n\n"+
+	return fmt.Sprintf("**%s \"%s\"**:\n\n"+
 		"+ %s\n\n"+
 		"+ %s\n\n"+
 		"+ %s\n\n"+
-		"+ %s\n", box.Name, controlStr, mechString, inputStr, outputString)
+		"+ %s\n", tp, box.Name, controlStr, mechString, inputStr, outputString)
 }
 
 func (box *Box) StringAsTable() string {
