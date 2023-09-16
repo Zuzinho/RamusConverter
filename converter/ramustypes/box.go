@@ -18,6 +18,7 @@ type Box struct {
 	Id              int
 	Name            string
 	Reference       string
+	Boxes           []*Box
 	InputArrows     []*InputArrow
 	OutputArrows    []*OutputArrow
 	ControlArrows   []*ControlArrow
@@ -38,7 +39,7 @@ func NewBox(id int, name string, reference string) *Box {
 	}
 }
 
-func (box Box) AddArrow(arrow Arrow, tp string) *Box {
+func (box *Box) AddArrow(arrow Arrow, tp string) {
 	switch tp {
 	case "I":
 		iArr := InputArrow(arrow)
@@ -53,13 +54,15 @@ func (box Box) AddArrow(arrow Arrow, tp string) *Box {
 		cArr := ControlArrow(arrow)
 		box.ControlArrows = append(box.ControlArrows, &cArr)
 	}
+}
 
-	return &box
+func (box *Box) AddBox(childBox *Box) {
+	box.Boxes = append(box.Boxes, childBox)
 }
 
 const BoxPrefix = "{LWI I 4 255 255 255}"
 
-func (box Box) StringAsList() string {
+func (box *Box) StringAsList() string {
 	controlStr := "Управляющим потоком (потоком Управления) является:"
 	mechString := "Процесс осуществляется (механизм):"
 	inputStr := "Входами процесса являются:"
@@ -108,7 +111,7 @@ func (box Box) StringAsList() string {
 		"+ %s\n", box.Name, controlStr, mechString, inputStr, outputString)
 }
 
-func (box Box) StringAsTable() string {
+func (box *Box) StringAsTable() string {
 	var control, mech, input, output strings.Builder
 
 	for i, arrow := range box.InputArrows {
