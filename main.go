@@ -18,22 +18,34 @@ func main() {
 
 	tmpl := "./templates/index.tmpl"
 
-	mux.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("server on '/load'")
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("server on '/'")
 		ts, err := template.ParseFiles(tmpl)
-		throwOnErr(err, &w)
+		if err != nil {
+			throwOnErr(err, &w)
+			return
+		}
 
 		err = ts.Execute(w, "Здесь будет текст с описанием модели")
-		throwOnErr(err, &w)
+		if err != nil {
+			throwOnErr(err, &w)
+			return
+		}
 	})
 
-	mux.HandleFunc("/convert", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("server on '/convert'")
+	mux.HandleFunc("/convert/", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("server on '/convert/'")
 		ts, err := template.ParseFiles(tmpl)
-		throwOnErr(err, &w)
+		if err != nil {
+			throwOnErr(err, &w)
+			return
+		}
 
 		file, fileHeader, err := r.FormFile("file")
-		throwOnErr(err, &w)
+		if err != nil {
+			throwOnErr(err, &w)
+			return
+		}
 
 		if ok, err := checker.IsCorrectFormat(fileHeader); !ok {
 			throwOnErr(err, &w)
@@ -47,7 +59,10 @@ func main() {
 		logOnErr(err)
 
 		err = ts.Execute(w, string(buf))
-		throwOnErr(err, &w)
+		if err != nil {
+			throwOnErr(err, &w)
+			return
+		}
 	})
 
 	err := http.ListenAndServe(":"+port, mux)
@@ -61,8 +76,6 @@ func logOnErr(err error) {
 }
 
 func throwOnErr(err error, w *http.ResponseWriter) {
-	if err != nil {
-		http.Error(*w, err.Error(), 500)
-		log.Println(err)
-	}
+	http.Error(*w, err.Error(), 500)
+	log.Println(err)
 }
