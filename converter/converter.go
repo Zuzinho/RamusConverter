@@ -1,14 +1,14 @@
 package converter
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"ramus/converter/ramustypes"
 	"regexp"
 	"strings"
 )
 
-func convert(rd io.Reader) ([]*ramustypes.Box, error) {
+func convert(rd io.Reader) (*ramustypes.Box, error) {
 	buf, err := io.ReadAll(rd)
 	if err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func convert(rd io.Reader) ([]*ramustypes.Box, error) {
 
 	splitDiags := regDiag.Split(string(buf), -1)
 	for _, diag := range splitDiags {
-		boxesSrcs := regBox.FindAll([]byte(diag), -1)
 		boxes := make([]*ramustypes.Box, 0)
+		boxesSrcs := regBox.FindAll([]byte(diag), -1)
 		for _, boxesSrc := range boxesSrcs {
 			box, err := convertBox(boxesSrc)
 			if err != nil {
@@ -56,7 +56,6 @@ func convert(rd io.Reader) ([]*ramustypes.Box, error) {
 					box := boxes[i]
 					if box.Id == info.BoxId {
 						box.AddArrow(*arrow, info.Type)
-						log.Println(info, boxes[i])
 					}
 				}
 			}
@@ -65,26 +64,78 @@ func convert(rd io.Reader) ([]*ramustypes.Box, error) {
 		mainBoxes = append(mainBoxes, boxes...)
 	}
 
-	return mainBoxes, nil
+	mainBox := convertArrToBox(mainBoxes)
+
+	return mainBox, nil
+}
+
+func convertArrToBox(boxes []*ramustypes.Box) *ramustypes.Box {
+	if len(boxes) == 0 {
+		return nil
+	}
+
+	mainBox := boxes[0]
+
+	for i := 1; i < len(boxes); i++ {
+		box := boxes[i]
+		if len(box.Reference) == 2 {
+			mainBox.AddBox(box)
+			continue
+		}
+
+		parentBox := mainBox
+		for j := 1; j < len(box.Reference)-1; j++ {
+			id := int(box.Reference[j]) - 49
+			parentBox = parentBox.Boxes[id]
+		}
+		parentBox.AddBox(box)
+	}
+
+	return mainBox
 }
 
 func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
-	boxes, err := convert(rd)
+	mainBox, err := convert(rd)
 	if err != nil {
 		return nil, err
 	}
 
 	builder := strings.Builder{}
 
-	for _, box := range boxes {
-		builder.WriteString(box.StringAsList() + "\n")
+	var stringBoxFunc func(box *ramustypes.Box)
+	stringBoxFunc = func(box *ramustypes.Box) {
+		if box == nil {
+			return
+		}
+
+		resBuilder := strings.Builder{}
+		if len(box.Boxes) > 0 {
+			resBuilder.WriteString(fmt.Sprintf("%s \"%s\" предполагает выполнение "+
+				"следующих подпроцессов:", box.ProcessType(), box.Name))
+			for i, childBox := range box.Boxes {
+				resBuilder.WriteString(fmt.Sprintf(" \"%s\"", childBox.Name))
+				if i == len(box.Boxes)-1 {
+					resBuilder.WriteString(".")
+				} else {
+					resBuilder.WriteString(",")
+				}
+			}
+		}
+
+		builder.WriteString(box.StringAsList() + "\n\n" + resBuilder.String() + "\n\n")
+
+		for _, childBox := range box.Boxes {
+			stringBoxFunc(childBox)
+		}
 	}
+
+	stringBoxFunc(mainBox)
 
 	return strings.NewReader(builder.String()), nil
 }
 
 func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
-	boxes, err := convert(rd)
+	mainBox, err := convert(rd)
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +145,20 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 	builder.WriteString("| **Наименование диаграммы/код** | **Вход** | **Выход** | **Механизм** | **Управление** |\n" +
 		"|--------------------------------|----------|-----------|--------------|----------------|\n")
 
-	for _, box := range boxes {
+	var stringBoxFunc func(*ramustypes.Box)
+	stringBoxFunc = func(box *ramustypes.Box) {
+		if box == nil {
+			return
+		}
+
 		builder.WriteString(box.StringAsTable() + "\n")
+
+		for _, childBox := range box.Boxes {
+			stringBoxFunc(childBox)
+		}
 	}
+
+	stringBoxFunc(mainBox)
 
 	return strings.NewReader(builder.String()), nil
 }
