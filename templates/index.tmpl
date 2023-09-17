@@ -61,9 +61,25 @@
         	border: 1px solid #dddddd;
         	padding: 5px;
         }
+
+        ul {
+            list-style-type: disc;
+        }
     </style>
 </head>
 <body>
+<div>Для конвертации необходимо:
+<ol>
+    <li>Экспортировать диаграмму в IDL формат</li>
+    <li>Поменять кодировку получившегося файла на UTF-8
+    <ul>
+        <li>В Блокноте: Файл -> Сохранить как -> Кодировка - UTF-8</li>
+        <li>В Notepad++: Кодировка -> Преобразовать в UTG-8</li>
+    </ul>
+    </li>
+    <li>Добавить в поле ввода файлов</li>
+</ol>
+</div>
 <form method="post" enctype="multipart/form-data">
     <p>Выберите файл формата .idl</p>
     <input class="file_input" type="file" name="file">
