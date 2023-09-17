@@ -14,5 +14,5 @@ func NewIncorrectFormatErr(format string) *IncorrectFormatErr {
 }
 
 func (err IncorrectFormatErr) Error() string {
-	return fmt.Sprintf("wanted '.idl' format - '.%s' got", err.format)
+	return fmt.Sprintf("invalid format: want '.idl' - have '.%s'", err.format)
 }
