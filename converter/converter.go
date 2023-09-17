@@ -136,12 +136,23 @@ func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
 	return strings.NewReader(builder.String()), nil
 }
 
-func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
+func ConvertAsTables(rd io.Reader) (*strings.Reader, error) {
 	mainBox, err := convert(rd)
 	if err != nil {
 		return nil, err
 	}
 
+	builder := strings.Builder{}
+
+	notElBuilder := convertAsNotationElementTable(mainBox)
+	tpObjBuilder := convertAsTypeObjectTable(mainBox)
+
+	builder.WriteString(notElBuilder.String() + "\n\n" + tpObjBuilder.String())
+
+	return strings.NewReader(builder.String()), nil
+}
+
+func convertAsNotationElementTable(mainBox *ramustypes.Box) *strings.Builder {
 	builder := strings.Builder{}
 
 	builder.WriteString("| **Наименование диаграммы/код** | **Вход** | **Выход** | **Механизм** | **Управление** |\n" +
@@ -153,7 +164,7 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 			return
 		}
 
-		builder.WriteString(box.StringAsTable() + "\n")
+		builder.WriteString(box.StringAsNotationElementTable() + "\n")
 
 		for _, childBox := range box.Boxes {
 			stringFunc(childBox)
@@ -162,5 +173,16 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 
 	stringFunc(mainBox)
 
-	return strings.NewReader(builder.String()), nil
+	return &builder
+}
+
+func convertAsTypeObjectTable(mainBox *ramustypes.Box) *strings.Builder {
+	builder := strings.Builder{}
+
+	builder.WriteString("| **Элемент нотации IDEF0** | **Наименование преобразуемого объекта** |\n" +
+		"|---------------------------|-----------------------------------------|")
+
+	builder.WriteString(mainBox.StringAsObjectTypeTable())
+
+	return &builder
 }
