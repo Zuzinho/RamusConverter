@@ -94,6 +94,8 @@ func convertArrToBox(boxes []*ramustypes.Box) *ramustypes.Box {
 	return mainBox
 }
 
+type stringFuncType func(*ramustypes.Box)
+
 func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
 	mainBox, err := convert(rd)
 	if err != nil {
@@ -102,8 +104,8 @@ func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
 
 	builder := strings.Builder{}
 
-	var stringBoxFunc func(box *ramustypes.Box)
-	stringBoxFunc = func(box *ramustypes.Box) {
+	var stringFunc stringFuncType
+	stringFunc = func(box *ramustypes.Box) {
 		if box == nil {
 			return
 		}
@@ -125,11 +127,11 @@ func ConvertAsList(rd io.Reader) (*strings.Reader, error) {
 		builder.WriteString(box.StringAsList() + "\n\n" + resBuilder.String() + "\n\n")
 
 		for _, childBox := range box.Boxes {
-			stringBoxFunc(childBox)
+			stringFunc(childBox)
 		}
 	}
 
-	stringBoxFunc(mainBox)
+	stringFunc(mainBox)
 
 	return strings.NewReader(builder.String()), nil
 }
@@ -145,8 +147,8 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 	builder.WriteString("| **Наименование диаграммы/код** | **Вход** | **Выход** | **Механизм** | **Управление** |\n" +
 		"|--------------------------------|----------|-----------|--------------|----------------|\n")
 
-	var stringBoxFunc func(*ramustypes.Box)
-	stringBoxFunc = func(box *ramustypes.Box) {
+	var stringFunc stringFuncType
+	stringFunc = func(box *ramustypes.Box) {
 		if box == nil {
 			return
 		}
@@ -154,11 +156,11 @@ func ConvertAsTable(rd io.Reader) (*strings.Reader, error) {
 		builder.WriteString(box.StringAsTable() + "\n")
 
 		for _, childBox := range box.Boxes {
-			stringBoxFunc(childBox)
+			stringFunc(childBox)
 		}
 	}
 
-	stringBoxFunc(mainBox)
+	stringFunc(mainBox)
 
 	return strings.NewReader(builder.String()), nil
 }
