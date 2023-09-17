@@ -120,7 +120,7 @@ func (box *Box) StringAsList() string {
 		"+ %s\n", tp, box.Name, controlStr, mechString, inputStr, outputString)
 }
 
-func (box *Box) StringAsTable() string {
+func (box *Box) StringAsNotationElementTable() string {
 	var control, mech, input, output strings.Builder
 
 	for i, arrow := range box.InputArrows {
@@ -141,4 +141,21 @@ func (box *Box) StringAsTable() string {
 
 	return fmt.Sprintf("|%s %s|%s|%s|%s|%s|", box.Name, box.Reference,
 		input.String(), output.String(), mech.String(), control.String())
+}
+
+func (box *Box) StringAsObjectTypeTable() string {
+	entry := "Вход"
+	exit := "Выход"
+
+	builder := strings.Builder{}
+
+	for _, arrow := range box.InputArrows {
+		builder.WriteString(fmt.Sprintf("\n|%s|%s|", entry, arrow.Label))
+	}
+
+	for _, arrow := range box.OutputArrows {
+		builder.WriteString(fmt.Sprintf("\n|%s|%s|", exit, arrow.Label))
+	}
+
+	return builder.String()
 }
