@@ -41,7 +41,7 @@ func main() {
 
 	mux.HandleFunc("/convert_table/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("server on '/convert_table/'")
-		convert(w, r, converter.ConvertAsTable)
+		convert(w, r, converter.ConvertAsTables)
 	})
 
 	err := http.ListenAndServe(":"+port, mux)
