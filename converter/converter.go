@@ -145,9 +145,10 @@ func ConvertAsTables(rd io.Reader) (*strings.Reader, error) {
 	builder := strings.Builder{}
 
 	notElBuilder := convertAsNotationElementTable(mainBox)
+	connTpBuilder := convertAsConnectionTypeTable(mainBox)
 	tpObjBuilder := convertAsTypeObjectTable(mainBox)
 
-	builder.WriteString(notElBuilder.String() + "\n\n" + tpObjBuilder.String())
+	builder.WriteString(notElBuilder.String() + "\n\n" + connTpBuilder.String() + "\n\n" + tpObjBuilder.String())
 
 	return strings.NewReader(builder.String()), nil
 }
@@ -172,6 +173,87 @@ func convertAsNotationElementTable(mainBox *ramustypes.Box) *strings.Builder {
 	}
 
 	stringFunc(mainBox)
+
+	return &builder
+}
+
+type connectionTypeMap map[string][]*ramustypes.Box
+
+func (mp connectionTypeMap) addBox(label string, box *ramustypes.Box) {
+	if _, ok := mp[label]; ok {
+		mp[label] = append(mp[label], box)
+	} else {
+		mp[label] = append(mp[label], box)
+	}
+}
+
+func convertAsConnectionTypeTable(mainBox *ramustypes.Box) *strings.Builder {
+	builder := strings.Builder{}
+
+	builder.WriteString("| **Наименование диаграммы/код** | **Наименование потока** | **Тип связи** |\n" +
+		"|--------------------------------|-------------------------|---------------|")
+
+	controlMap := make(connectionTypeMap)
+
+	var stringFunc stringFuncType
+	stringFunc = func(box *ramustypes.Box) {
+		if box == nil {
+			return
+		}
+
+		for _, arrow := range box.ControlArrows {
+			controlMap.addBox(arrow.Label, box)
+		}
+
+		for _, childBox := range box.Boxes {
+			stringFunc(childBox)
+		}
+	}
+
+	stringFunc(mainBox)
+
+	ioMap := make(connectionTypeMap)
+
+	stringFunc = func(box *ramustypes.Box) {
+		if box == nil {
+			return
+		}
+
+		for _, arrow := range box.InputArrows {
+			ioMap.addBox(arrow.Label, box)
+		}
+		for _, arrow := range box.OutputArrows {
+			ioMap.addBox(arrow.Label, box)
+		}
+
+		for _, childBox := range box.Boxes {
+			stringFunc(childBox)
+		}
+	}
+
+	stringFunc(mainBox)
+
+	for k, v := range controlMap {
+		diagsBuilder := strings.Builder{}
+		for _, box := range v {
+			diagsBuilder.WriteString(fmt.Sprintf("%s %s ", box.Name, box.Reference))
+		}
+
+		builder.WriteString(fmt.Sprintf("\n|%s|%s|Управление|", diagsBuilder.String(), k))
+	}
+
+	for k, v := range ioMap {
+		if len(v) < 2 {
+			continue
+		}
+
+		diagsBuilder := strings.Builder{}
+		for _, box := range v {
+			diagsBuilder.WriteString(fmt.Sprintf("%s %s ", box.Name, box.Reference))
+		}
+
+		builder.WriteString(fmt.Sprintf("\n|%s|%s|Выход-Вход|", diagsBuilder.String(), k))
+	}
 
 	return &builder
 }
