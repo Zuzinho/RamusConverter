@@ -143,19 +143,138 @@ func (box *Box) StringAsNotationElementTable() string {
 		input.String(), output.String(), mech.String(), control.String())
 }
 
-func (box *Box) StringAsObjectTypeTable() string {
-	entry := "Вход"
-	exit := "Выход"
+type StringFuncType func(*Box)
 
+func (box *Box) StringAsConnectionTypeTable() string {
+	builder := strings.Builder{}
+
+	controlMap := make(connectionTypeMap)
+
+	var stringFunc StringFuncType
+	stringFunc = func(box *Box) {
+		if box == nil {
+			return
+		}
+
+		for _, arrow := range box.ControlArrows {
+			controlMap.addBox(arrow.Label, box, "C")
+		}
+
+		for _, childBox := range box.Boxes {
+			stringFunc(childBox)
+		}
+	}
+
+	stringFunc(box)
+
+	ioMap := make(connectionTypeMap)
+
+	stringFunc = func(box *Box) {
+		if box == nil {
+			return
+		}
+
+		for _, arrow := range box.InputArrows {
+			ioMap.addBox(arrow.Label, box, "I")
+		}
+		for _, arrow := range box.OutputArrows {
+			ioMap.addBox(arrow.Label, box, "O")
+		}
+
+		for _, childBox := range box.Boxes {
+			stringFunc(childBox)
+		}
+	}
+
+	stringFunc(box)
+
+	builder.WriteString(controlMap.String("C").String())
+	builder.WriteString(ioMap.String("IO").String())
+
+	return builder.String()
+}
+
+func (box *Box) StringAsObjectTypeTable() string {
 	builder := strings.Builder{}
 
 	for _, arrow := range box.InputArrows {
-		builder.WriteString(fmt.Sprintf("\n|%s|%s|", entry, arrow.Label))
+		builder.WriteString(fmt.Sprintf("\n|Вход|%s|", arrow.Label))
 	}
 
 	for _, arrow := range box.OutputArrows {
-		builder.WriteString(fmt.Sprintf("\n|%s|%s|", exit, arrow.Label))
+		builder.WriteString(fmt.Sprintf("\n|Выход|%s|", arrow.Label))
+	}
+
+	inMap := make(connectionTypeMap)
+	var stringFunc StringFuncType
+	stringFunc = func(box *Box) {
+		if box == nil {
+			return
+		}
+
+		for _, arrow := range box.InputArrows {
+			inMap.addBox(arrow.Label, box, "I")
+		}
+		for _, arrow := range box.OutputArrows {
+			inMap.addBox(arrow.Label, box, "O")
+		}
+
+		for _, childBox := range box.Boxes {
+			stringFunc(childBox)
+		}
+	}
+
+	stringFunc(box)
+
+	for k, v := range inMap {
+		if v.output && v.input {
+			builder.WriteString(fmt.Sprintf("\n|Внутренний поток|%s|", k))
+		}
 	}
 
 	return builder.String()
+}
+
+type mapValueType struct {
+	boxes  []*Box
+	input  bool
+	output bool
+}
+
+type connectionTypeMap map[string]mapValueType
+
+func (mp connectionTypeMap) addBox(label string, box *Box, tp string) {
+	if _, ok := mp[label]; ok {
+		v := mp[label]
+		v.boxes = append(v.boxes, box)
+		mp[label] = v
+	} else {
+		mp[label] = mapValueType{boxes: []*Box{box}}
+	}
+
+	v := mp[label]
+	switch tp {
+	case "I":
+		v.input = true
+	case "O":
+		v.output = true
+	}
+	mp[label] = v
+}
+
+func (mp connectionTypeMap) String(tp string) *strings.Builder {
+	builder := strings.Builder{}
+
+	for k, v := range mp {
+		if tp == "C" || v.input && v.output {
+			diagsBuilder := strings.Builder{}
+			for _, box := range v.boxes {
+				diagsBuilder.WriteString(fmt.Sprintf("%s %s ", box.Name, box.Reference))
+			}
+
+			builder.WriteString(fmt.Sprintf("\n|%s|%s|Выход-Вход|", diagsBuilder.String(), k))
+		}
+	}
+
+	return &builder
 }
