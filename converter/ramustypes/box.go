@@ -268,7 +268,7 @@ func (mp connectionTypeMap) String(tp string) *strings.Builder {
 	var connType string
 	if tp == "C" {
 		connType = "Управление"
-	} else tp == "IO" {
+	} else if tp == "IO" {
 		connType = "Выход-вход"
 	}
 
