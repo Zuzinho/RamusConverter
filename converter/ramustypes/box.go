@@ -265,6 +265,13 @@ func (mp connectionTypeMap) addBox(label string, box *Box, tp string) {
 func (mp connectionTypeMap) String(tp string) *strings.Builder {
 	builder := strings.Builder{}
 
+	var connType string
+	if tp == "C" {
+		connType = "Управление"
+	} else tp == "IO" {
+		connType = "Выход-вход"
+	}
+
 	for k, v := range mp {
 		if tp == "C" || v.input && v.output {
 			diagsBuilder := strings.Builder{}
@@ -272,7 +279,7 @@ func (mp connectionTypeMap) String(tp string) *strings.Builder {
 				diagsBuilder.WriteString(fmt.Sprintf("%s %s ", box.Name, box.Reference))
 			}
 
-			builder.WriteString(fmt.Sprintf("\n|%s|%s|Выход-Вход|", diagsBuilder.String(), k))
+			builder.WriteString(fmt.Sprintf("\n|%s|%s|%s|", diagsBuilder.String(), k, connType))
 		}
 	}
 
