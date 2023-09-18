@@ -124,19 +124,19 @@ func (box *Box) StringAsNotationElementTable() string {
 	var control, mech, input, output strings.Builder
 
 	for i, arrow := range box.InputArrows {
-		input.WriteString(fmt.Sprintf("%s I%d\t", arrow.Label, i))
+		input.WriteString(fmt.Sprintf("%s I%d\t", arrow.Label, i+1))
 	}
 
 	for i, arrow := range box.OutputArrows {
-		output.WriteString(fmt.Sprintf("%s O%d\t", arrow.Label, i))
+		output.WriteString(fmt.Sprintf("%s O%d\t", arrow.Label, i+1))
 	}
 
 	for i, arrow := range box.MechanismArrows {
-		mech.WriteString(fmt.Sprintf("%s M%d\t", arrow.Label, i))
+		mech.WriteString(fmt.Sprintf("%s M%d\t", arrow.Label, i+1))
 	}
 
 	for i, arrow := range box.ControlArrows {
-		control.WriteString(fmt.Sprintf("%s C%d\t", arrow.Label, i))
+		control.WriteString(fmt.Sprintf("%s C%d\t", arrow.Label, i+1))
 	}
 
 	return fmt.Sprintf("|%s %s|%s|%s|%s|%s|", box.Name, box.Reference,
