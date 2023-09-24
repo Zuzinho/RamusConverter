@@ -13,8 +13,8 @@ func CreateTable(mainBox *box.Box) *strings.Builder {
 
 	builder.WriteString(tableTitle)
 
-	fillBuilderByNotationEl(&builder, mainBox.InputArrows, ENTRY)
-	fillBuilderByNotationEl(&builder, mainBox.OutputArrows, EXIT)
+	fillBuilderByNotationEl(&builder, mainBox.InputArrows, entry)
+	fillBuilderByNotationEl(&builder, mainBox.OutputArrows, exit)
 
 	var stringFunc stringcreater.StringFuncType
 	stringFunc = func(box *box.Box) {
@@ -23,7 +23,7 @@ func CreateTable(mainBox *box.Box) *strings.Builder {
 				continue
 			}
 
-			builder.WriteString(fmt.Sprintf("|%s|%s|\n", INTERIOR, streamCellPattern.replaceStreamLabel(arrow.Label)))
+			builder.WriteString(fmt.Sprintf("|%s|%s|\n", interior, streamCellPattern.replaceStreamLabel(arrow.Label)))
 		}
 
 		for _, childBox := range box.Boxes {

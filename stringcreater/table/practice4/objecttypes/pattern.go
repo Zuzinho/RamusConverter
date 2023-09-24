@@ -10,9 +10,9 @@ const (
 type notationElement string
 
 const (
-	ENTRY    notationElement = "Вход"
-	EXIT     notationElement = "Выход"
-	INTERIOR notationElement = "Внутренний поток"
+	entry    notationElement = "Вход"
+	exit     notationElement = "Выход"
+	interior notationElement = "Внутренний поток"
 )
 
 type pattern string
