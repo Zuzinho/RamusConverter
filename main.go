@@ -29,7 +29,14 @@ func main() {
 
 	mux.HandleFunc(string(handler.ConvertTable), func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("server on '%s'", handler.ConvertTable)
-		handler.HandleConverter(w, r, table.CreateTable)
+		practiceNum := r.FormValue("practice")
+		tableFunc, err := table.TablesByPractice(practiceNum)
+		if err != nil {
+			errhandler.ThrowOnErr(err, &w)
+			return
+		}
+
+		handler.HandleConverter(w, r, tableFunc)
 	})
 
 	err := http.ListenAndServe(":"+port, mux)
