@@ -1,10 +1,10 @@
-package table
+package practice4
 
 import (
 	"ramus/converter/ramustypes/box"
-	"ramus/stringcreater/table/connectiontypes"
-	"ramus/stringcreater/table/notationelements"
-	"ramus/stringcreater/table/objecttypes"
+	"ramus/stringcreater/table/practice4/connectiontypes"
+	"ramus/stringcreater/table/practice4/notationelements"
+	"ramus/stringcreater/table/practice4/objecttypes"
 	"strings"
 )
 
