@@ -12,6 +12,7 @@ type Arrow struct {
 	Label       string
 	Sink        *types.IOPutStruct
 	SourceArrow *Arrow
+	SinkArrows  Arrows
 }
 
 func NewArrow(src []byte) (*Arrow, error) {
@@ -41,10 +42,12 @@ func NewArrow(src []byte) (*Arrow, error) {
 	}
 
 	return &Arrow{
-		Id:     id,
-		Source: source,
-		Label:  label,
-		Sink:   sink,
+		Id:          id,
+		Source:      source,
+		Label:       label,
+		Sink:        sink,
+		SourceArrow: nil,
+		SinkArrows:  make(Arrows, 0),
 	}, nil
 }
 

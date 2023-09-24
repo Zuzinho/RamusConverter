@@ -8,6 +8,7 @@ func (arrows Arrows) ConnectBranches() {
 		if srcArrId := arrow.Source.BranchArrowId; srcArrId != 0 {
 			srcArrow := arrows[srcArrId-1]
 			arrow.SourceArrow = srcArrow
+			srcArrow.SinkArrows = append(srcArrow.SinkArrows, arrow)
 		}
 	}
 }
