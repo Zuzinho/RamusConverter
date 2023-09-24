@@ -4,3 +4,4 @@
 *.js
 .idea
 *.idl
+.env
