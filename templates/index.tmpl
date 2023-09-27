@@ -162,23 +162,25 @@
         div.innerHTML = marked.parse(div.innerHTML)
     })
 </script>
-<script>
-    const trs = document.getElementsByTagName("table").item(1).getElementsByTagName("tr");
+<script language="JavaScript">
+    setTimeout(() => {
+            const trs = document.getElementsByTagName("table").item(1).getElementsByTagName("tr");
 
-    function replace(i, td) {
-        let tdValue = +td.innerHTML;
-        if (tdValue) {
-            td.innerHTML = trs.item(i + tdValue).getElementsByTagName("td").item(0).innerHTML
-        }
-    }
+            function replace(i, td) {
+                let tdValue = +td.innerHTML;
+                if (tdValue) {
+                    td.innerHTML = trs.item(i + tdValue).getElementsByTagName("td").item(0).innerHTML
+                }
+            }
 
-    for (let i = 1; i < trs.length; i++) {
-        let tr = trs.item(i);
-        let tds = tr.getElementsByTagName("td");
-        replace(i, tds[6])
+            for (let i = 1; i < trs.length; i++) {
+                let tr = trs.item(i);
+                let tds = tr.getElementsByTagName("td");
 
-        replace(i, tds[4])
-    }
+                replace(i, tds[6])
+                replace(i, tds[4])
+            }
+    }, 500)
 </script>
 </body>
 </html>
